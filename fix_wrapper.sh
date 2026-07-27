@@ -4,7 +4,7 @@
 echo "=== GANK SERVICE: Fixing Gradle Wrapper & Git Settings ==="
 
 # 1. Regenerate wrapper
-gradle wrapper --gradle-version 8.7
+gradle wrapper --gradle-version 9.3.1
 
 # 2. Grant permissions
 chmod +x gradlew
