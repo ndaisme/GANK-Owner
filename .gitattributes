@@ -1,0 +1,11 @@
+# Ensure binary files are treated as binary by Git
+*.jar binary
+*.aar binary
+*.keystore binary
+*.jks binary
+*.png binary
+*.jpg binary
+*.webp binary
+
+# Ensure gradlew shell script uses LF line endings
+gradlew text eol=lf
