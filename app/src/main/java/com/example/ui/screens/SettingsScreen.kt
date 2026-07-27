@@ -1,5 +1,8 @@
 package com.example.ui.screens
 
+import android.content.ClipboardManager
+import android.content.ClipData
+import android.content.Intent
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -18,6 +21,9 @@ import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -39,7 +45,9 @@ import com.example.ui.theme.GankColors
 fun SettingsScreen(
     initialSubTab: Int = 0, // 0: Toko, 1: CI/CD
     onClearDummyData: () -> Unit = {},
-    onResetSampleData: () -> Unit = {}
+    onResetSampleData: () -> Unit = {},
+    onExportToJson: () -> String = { "[]" },
+    onImportFromJson: (String, (Boolean, String) -> Unit) -> Unit = { _, _ -> }
 ) {
     var activeSubTab by remember { mutableIntStateOf(initialSubTab) }
     val context = LocalContext.current
@@ -676,6 +684,132 @@ fun SettingsScreen(
                                 testTag = "btn_save_fonnte_settings"
                             )
                         }
+                    }
+                }
+
+                item {
+                    var showImportDialog by remember { mutableStateOf(false) }
+                    var pasteText by remember { mutableStateOf("") }
+
+                    NeoBrutalistCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        backgroundColor = GankColors.White
+                    ) {
+                        Column {
+                            Text(
+                                text = "PENCADANGAN & PEMULIHAN DATA",
+                                fontWeight = FontWeight.Black,
+                                fontSize = 14.sp,
+                                color = GankColors.Ink
+                            )
+                            Text(
+                                text = "Cadangkan semua data servis Anda ke format JSON atau pulihkan data dari cadangan teks agar data tidak hilang saat aplikasi diinstal ulang.",
+                                fontSize = 11.sp,
+                                color = GankColors.Steel
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            NeoBrutalistButton(
+                                text = "Salin Cadangan ke Clipboard",
+                                onClick = {
+                                    val json = onExportToJson()
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("Gank Service Backup", json)
+                                    clipboard.setPrimaryClip(clip)
+                                    Toast.makeText(context, "Cadangan JSON berhasil disalin!", Toast.LENGTH_SHORT).show()
+                                },
+                                containerColor = GankColors.White,
+                                icon = Icons.Default.ContentCopy,
+                                modifier = Modifier.fillMaxWidth(),
+                                testTag = "btn_copy_backup_json"
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            NeoBrutalistButton(
+                                text = "Bagikan Cadangan (File JSON)",
+                                onClick = {
+                                    val json = onExportToJson()
+                                    val sendIntent: Intent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_TEXT, json)
+                                        type = "application/json"
+                                    }
+                                    val shareIntent = Intent.createChooser(sendIntent, "Ekspor Backup Gank Service")
+                                    context.startActivity(shareIntent)
+                                },
+                                containerColor = GankColors.White,
+                                icon = Icons.Default.Share,
+                                modifier = Modifier.fillMaxWidth(),
+                                testTag = "btn_share_backup_json"
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            NeoBrutalistButton(
+                                text = "Pulihkan / Impor dari Clipboard",
+                                onClick = {
+                                    pasteText = ""
+                                    showImportDialog = true
+                                },
+                                containerColor = GankColors.GankYellow,
+                                icon = Icons.Default.ContentPaste,
+                                modifier = Modifier.fillMaxWidth(),
+                                testTag = "btn_import_backup_json"
+                            )
+                        }
+                    }
+
+                    if (showImportDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showImportDialog = false },
+                            title = { Text("TEMPEL CADANGAN JSON", fontWeight = FontWeight.Black) },
+                            text = {
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    Text(
+                                        text = "Tempel teks cadangan JSON di bawah untuk memulihkan seluruh data servis. Data dengan kode/ID yang sama akan diperbarui.",
+                                        fontSize = 11.sp,
+                                        color = GankColors.Steel,
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+                                    NeoBrutalistTextField(
+                                        value = pasteText,
+                                        onValueChange = { pasteText = it },
+                                        label = "Teks JSON Cadangan",
+                                        placeholder = "[\n  {\n    \"serviceNumber\": \"GS-2026-001\",\n    ...\n  }\n]",
+                                        modifier = Modifier.height(180.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                                    )
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        if (pasteText.isNotBlank()) {
+                                            onImportFromJson(pasteText) { success, message ->
+                                                if (success) {
+                                                    showImportDialog = false
+                                                }
+                                                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                                            }
+                                        } else {
+                                            Toast.makeText(context, "Teks JSON tidak boleh kosong!", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                ) {
+                                    Text("Pulihkan Sekarang", fontWeight = FontWeight.Black, color = GankColors.Ink)
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showImportDialog = false }) {
+                                    Text("Batal", fontWeight = FontWeight.Bold, color = GankColors.Ink)
+                                }
+                            },
+                            containerColor = GankColors.White,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.border(3.dp, GankColors.Ink, RoundedCornerShape(12.dp))
+                        )
                     }
                 }
 

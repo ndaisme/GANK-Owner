@@ -2,6 +2,7 @@ package com.example.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.squareup.moshi.JsonClass
 
 enum class ServiceStatus(val displayName: String) {
     CHECK_IN("CHECK IN"),
@@ -15,6 +16,7 @@ enum class ServiceStatus(val displayName: String) {
 }
 
 @Entity(tableName = "services")
+@JsonClass(generateAdapter = true)
 data class ServiceOrder(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val serviceNumber: String,

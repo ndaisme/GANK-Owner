@@ -14,6 +14,9 @@ import com.example.data.repository.GankRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 enum class MainTab(val title: String) {
     DASHBOARD("Dashboard"),
@@ -262,6 +265,42 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun resetSampleData() {
         viewModelScope.launch {
             repository.resetSampleData()
+        }
+    }
+
+    private val moshi = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
+
+    fun exportServicesToJson(): String {
+        return try {
+            val listType = Types.newParameterizedType(List::class.java, ServiceOrder::class.java)
+            val adapter = moshi.adapter<List<ServiceOrder>>(listType)
+            adapter.indent("  ").toJson(services.value)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            "[]"
+        }
+    }
+
+    fun importServicesFromJson(json: String, onComplete: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val listType = Types.newParameterizedType(List::class.java, ServiceOrder::class.java)
+                val adapter = moshi.adapter<List<ServiceOrder>>(listType)
+                val importedList = adapter.fromJson(json)
+                if (importedList != null && importedList.isNotEmpty()) {
+                    importedList.forEach { service ->
+                        repository.addService(service)
+                    }
+                    onComplete(true, "Berhasil mengimpor ${importedList.size} data servis!")
+                } else {
+                    onComplete(false, "Format JSON tidak valid atau kosong.")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                onComplete(false, "Gagal mengimpor data: ${e.localizedMessage}")
+            }
         }
     }
 }

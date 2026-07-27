@@ -147,7 +147,9 @@ class MainActivity : ComponentActivity() {
 
                             MainTab.SETTINGS -> SettingsScreen(
                                 onClearDummyData = { viewModel.clearAllDummyData() },
-                                onResetSampleData = { viewModel.resetSampleData() }
+                                onResetSampleData = { viewModel.resetSampleData() },
+                                onExportToJson = { viewModel.exportServicesToJson() },
+                                onImportFromJson = { json, onComplete -> viewModel.importServicesFromJson(json, onComplete) }
                             )
                         }
                     }
