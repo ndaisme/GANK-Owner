@@ -9,6 +9,7 @@ import com.example.data.model.FinanceTransaction
 import com.example.data.model.ServiceOrder
 import com.example.data.model.ServiceStatus
 import com.example.data.model.SparepartItem
+import com.example.data.repository.FonnteService
 import com.example.data.repository.GankRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -25,6 +26,7 @@ enum class MainTab(val title: String) {
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: GankRepository
+    private val fonnteService = FonnteService(application)
 
     private val _selectedTab = MutableStateFlow(MainTab.DASHBOARD)
     val selectedTab: StateFlow<MainTab> = _selectedTab.asStateFlow()
@@ -125,6 +127,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     totalSpending = downPayment
                 )
             )
+
+            // Trigger Fonnte WhatsApp notification
+            fonnteService.sendNotification(
+                customerName = customerName,
+                customerPhone = customerPhone,
+                serviceNumber = number,
+                deviceModel = deviceModel,
+                complaint = complaint,
+                estimatedCost = estimatedCost,
+                statusDisplayName = ServiceStatus.CHECK_IN.displayName,
+                statusKey = ServiceStatus.CHECK_IN.name,
+                warrantyDays = 30
+            )
         }
     }
 
@@ -163,6 +178,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 }
             }
+
+            // Trigger Fonnte WhatsApp notification for the updated status
+            fonnteService.sendNotification(
+                customerName = service.customerName,
+                customerPhone = service.customerPhone,
+                serviceNumber = service.serviceNumber,
+                deviceModel = service.deviceModel,
+                complaint = service.complaint,
+                estimatedCost = service.estimatedCost,
+                statusDisplayName = nextStatus.displayName,
+                statusKey = nextStatus.name,
+                warrantyDays = service.warrantyDays
+            )
         }
     }
 

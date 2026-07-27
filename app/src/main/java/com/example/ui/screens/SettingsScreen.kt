@@ -15,6 +15,9 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Store
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -52,6 +55,34 @@ fun SettingsScreen(
     var storeMapsLink by remember { mutableStateOf(prefs.getString("store_maps", "Seberang Bank BCA | Buka 09.00 - 21.00") ?: "Seberang Bank BCA | Buka 09.00 - 21.00") }
     var storeTagline by remember { mutableStateOf(prefs.getString("store_tagline", "Spesialis Repair Smartphone & Laptop") ?: "Spesialis Repair Smartphone & Laptop") }
     var storeReceiptNote by remember { mutableStateOf(prefs.getString("store_note", "Garansi berlaku 30 hari. Wajib menyertakan nota ini saat klaim.") ?: "Garansi berlaku 30 hari. Wajib menyertakan nota ini saat klaim.") }
+
+    // Fonnte settings state
+    var fonnteEnabled by remember { mutableStateOf(prefs.getBoolean("fonnte_enabled", false)) }
+    var fonnteToken by remember { mutableStateOf(prefs.getString("fonnte_token", "") ?: "") }
+
+    val defaultCheckIn = "Halo {nama_pelanggan}, perangkat {tipe_perangkat} dengan No. Servis {no_servis} telah berhasil didaftarkan di {nama_toko} dengan keluhan: {keluhan}. Status saat ini: {status}. Terima kasih!"
+    var templateCheckIn by remember { mutableStateOf(prefs.getString("fonnte_template_check_in", defaultCheckIn) ?: defaultCheckIn) }
+
+    val defaultDiagnosis = "Halo {nama_pelanggan}, perangkat {tipe_perangkat} ({no_servis}) sedang dalam tahap diagnosa/pemeriksaan oleh teknisi kami. Status saat ini: {status}."
+    var templateDiagnosis by remember { mutableStateOf(prefs.getString("fonnte_template_diagnosis", defaultDiagnosis) ?: defaultDiagnosis) }
+
+    val defaultApproval = "Halo {nama_pelanggan}, diagnosa untuk perangkat {tipe_perangkat} ({no_servis}) telah selesai. Estimasi biaya perbaikan adalah {biaya}. Mohon konfirmasi persetujuan Anda melalui chat ini. Terima kasih!"
+    var templateApproval by remember { mutableStateOf(prefs.getString("fonnte_template_waiting_approval", defaultApproval) ?: defaultApproval) }
+
+    val defaultRepair = "Halo {nama_pelanggan}, perangkat {tipe_perangkat} ({no_servis}) sedang dalam proses perbaikan oleh teknisi kami. Status saat ini: {status}."
+    var templateRepair by remember { mutableStateOf(prefs.getString("fonnte_template_repair", defaultRepair) ?: defaultRepair) }
+
+    val defaultQc = "Halo {nama_pelanggan}, perbaikan perangkat {tipe_perangkat} ({no_servis}) telah selesai dan saat ini sedang dalam pengujian (Quality Control) untuk memastikan semua fungsi normal."
+    var templateQc by remember { mutableStateOf(prefs.getString("fonnte_template_quality_control", defaultQc) ?: defaultQc) }
+
+    val defaultCompleted = "Halo {nama_pelanggan}, kabar baik! Perbaikan perangkat {tipe_perangkat} ({no_servis}) di {nama_toko} TELAH SELESAI dan siap diambil. Total biaya: {biaya}. Silakan datang ke toko kami."
+    var templateCompleted by remember { mutableStateOf(prefs.getString("fonnte_template_completed", defaultCompleted) ?: defaultCompleted) }
+
+    val defaultPickedUp = "Halo {nama_pelanggan}, terima kasih telah mempercayakan perbaikan {tipe_perangkat} ({no_servis}) di {nama_toko}. Garansi perbaikan berlaku selama {garansi} hari. Semoga sehat selalu!"
+    var templatePickedUp by remember { mutableStateOf(prefs.getString("fonnte_template_picked_up", defaultPickedUp) ?: defaultPickedUp) }
+
+    val defaultCancelled = "Halo {nama_pelanggan}, servis untuk perangkat {tipe_perangkat} ({no_servis}) telah dibatalkan. Perangkat dapat diambil kembali di {nama_toko}. Terima kasih."
+    var templateCancelled by remember { mutableStateOf(prefs.getString("fonnte_template_cancelled", defaultCancelled) ?: defaultCancelled) }
 
     Column(
         modifier = Modifier
@@ -372,6 +403,278 @@ fun SettingsScreen(
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }
+                        }
+                    }
+                }
+
+                // WhatsApp Fonnte Settings Card
+                item {
+                    var showTemplatesEditor by remember { mutableStateOf(false) }
+                    NeoBrutalistCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        backgroundColor = GankColors.White
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "INTEGRASI WHATSAPP (FONNTE)",
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 14.sp,
+                                    color = GankColors.Ink
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(GankColors.GankYellow)
+                                        .border(1.dp, GankColors.Ink, RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text("FONNTE", fontSize = 9.sp, fontWeight = FontWeight.Black, color = GankColors.Ink)
+                                }
+                            }
+                            Text(
+                                text = "Kirim notifikasi WhatsApp otomatis ke pelanggan saat ada perubahan status servis.",
+                                fontSize = 11.sp,
+                                color = GankColors.Steel
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // NeoBrutalist Switch/Toggle row for Fonnte Enable/Disable
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (fonnteEnabled) GankColors.GankYellow else GankColors.White)
+                                    .border(3.dp, GankColors.Ink, RoundedCornerShape(8.dp))
+                                    .clickable { fonnteEnabled = !fonnteEnabled }
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Notifications,
+                                        contentDescription = null,
+                                        tint = GankColors.Ink,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column {
+                                        Text(
+                                            text = "Aktifkan WhatsApp Otomatis",
+                                            fontWeight = FontWeight.Black,
+                                            fontSize = 13.sp,
+                                            color = GankColors.Ink
+                                        )
+                                        Text(
+                                            text = if (fonnteEnabled) "Notifikasi otomatis AKTIF" else "Notifikasi otomatis NONAKTIF",
+                                            fontSize = 10.sp,
+                                            color = GankColors.Steel,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .border(2.dp, GankColors.Ink, RoundedCornerShape(4.dp))
+                                        .background(if (fonnteEnabled) GankColors.Ink else GankColors.White, RoundedCornerShape(4.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (fonnteEnabled) {
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = null,
+                                            tint = GankColors.GankYellow,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            NeoBrutalistTextField(
+                                value = fonnteToken,
+                                onValueChange = { fonnteToken = it },
+                                label = "Fonnte API Token",
+                                placeholder = "Masukkan token dari fonnte.com",
+                                testTag = "input_fonnte_token"
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Expandable Template Messages Accordion
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(GankColors.Paper)
+                                    .border(2.dp, GankColors.Ink, RoundedCornerShape(6.dp))
+                                    .clickable { showTemplatesEditor = !showTemplatesEditor }
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Store,
+                                        contentDescription = null,
+                                        tint = GankColors.Ink,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "Kustomisasi Template Pesan WA",
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 12.sp,
+                                        color = GankColors.Ink
+                                    )
+                                }
+                                Icon(
+                                    imageVector = if (showTemplatesEditor) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = GankColors.Ink,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+
+                            if (showTemplatesEditor) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(GankColors.Paper, RoundedCornerShape(6.dp))
+                                        .border(2.dp, GankColors.Ink, RoundedCornerShape(6.dp))
+                                        .padding(10.dp)
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = "Gunakan placeholder berikut untuk menyisipkan data dinamis:\n" +
+                                                    "• {nama_pelanggan} : Nama pelanggan\n" +
+                                                    "• {no_servis} : Nomor nota servis\n" +
+                                                    "• {tipe_perangkat} : Tipe HP / Laptop\n" +
+                                                    "• {keluhan} : Keluhan kerusakan\n" +
+                                                    "• {status} : Status terbaru (cth. DIAGNOSA)\n" +
+                                                    "• {biaya} : Estimasi atau total biaya\n" +
+                                                    "• {garansi} : Jumlah hari garansi\n" +
+                                                    "• {nama_toko} : Nama toko Anda",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = GankColors.Steel,
+                                            lineHeight = 14.sp
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                NeoBrutalistTextField(
+                                    value = templateCheckIn,
+                                    onValueChange = { templateCheckIn = it },
+                                    label = "Template CHECK IN (Pendaftaran)",
+                                    singleLine = false,
+                                    placeholder = defaultCheckIn,
+                                    testTag = "input_template_checkin"
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                NeoBrutalistTextField(
+                                    value = templateDiagnosis,
+                                    onValueChange = { templateDiagnosis = it },
+                                    label = "Template DIAGNOSA (Pemeriksaan)",
+                                    singleLine = false,
+                                    placeholder = defaultDiagnosis,
+                                    testTag = "input_template_diagnosis"
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                NeoBrutalistTextField(
+                                    value = templateApproval,
+                                    onValueChange = { templateApproval = it },
+                                    label = "Template WAITING APPROVAL (Nunggu Konfirmasi)",
+                                    singleLine = false,
+                                    placeholder = defaultApproval,
+                                    testTag = "input_template_approval"
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                NeoBrutalistTextField(
+                                    value = templateRepair,
+                                    onValueChange = { templateRepair = it },
+                                    label = "Template REPAIR (Dalam Perbaikan)",
+                                    singleLine = false,
+                                    placeholder = defaultRepair,
+                                    testTag = "input_template_repair"
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                NeoBrutalistTextField(
+                                    value = templateQc,
+                                    onValueChange = { templateQc = it },
+                                    label = "Template QUALITY CONTROL (Pengujian)",
+                                    singleLine = false,
+                                    placeholder = defaultQc,
+                                    testTag = "input_template_qc"
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                NeoBrutalistTextField(
+                                    value = templateCompleted,
+                                    onValueChange = { templateCompleted = it },
+                                    label = "Template COMPLETED (Selesai)",
+                                    singleLine = false,
+                                    placeholder = defaultCompleted,
+                                    testTag = "input_template_completed"
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                NeoBrutalistTextField(
+                                    value = templatePickedUp,
+                                    onValueChange = { templatePickedUp = it },
+                                    label = "Template PICKED UP (Sudah Diambil)",
+                                    singleLine = false,
+                                    placeholder = defaultPickedUp,
+                                    testTag = "input_template_pickedup"
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                NeoBrutalistTextField(
+                                    value = templateCancelled,
+                                    onValueChange = { templateCancelled = it },
+                                    label = "Template CANCELLED (Dibatalkan)",
+                                    singleLine = false,
+                                    placeholder = defaultCancelled,
+                                    testTag = "input_template_cancelled"
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            NeoBrutalistButton(
+                                text = "Simpan Pengaturan WhatsApp",
+                                onClick = {
+                                    prefs.edit().apply {
+                                        putBoolean("fonnte_enabled", fonnteEnabled)
+                                        putString("fonnte_token", fonnteToken)
+                                        putString("fonnte_template_check_in", templateCheckIn)
+                                        putString("fonnte_template_diagnosis", templateDiagnosis)
+                                        putString("fonnte_template_waiting_approval", templateApproval)
+                                        putString("fonnte_template_repair", templateRepair)
+                                        putString("fonnte_template_quality_control", templateQc)
+                                        putString("fonnte_template_completed", templateCompleted)
+                                        putString("fonnte_template_picked_up", templatePickedUp)
+                                        putString("fonnte_template_cancelled", templateCancelled)
+                                        apply()
+                                    }
+                                    Toast.makeText(context, "Pengaturan WhatsApp Fonnte berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                                },
+                                containerColor = GankColors.GankYellow,
+                                icon = Icons.Default.Save,
+                                modifier = Modifier.fillMaxWidth(),
+                                testTag = "btn_save_fonnte_settings"
+                            )
                         }
                     }
                 }
