@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -39,13 +40,14 @@ fun SettingsScreen(
 ) {
     var activeSubTab by remember { mutableIntStateOf(initialSubTab) }
     val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("gank_store_prefs", Context.MODE_PRIVATE) }
 
-    // Store settings state
-    var storeName by remember { mutableStateOf("GANK SERVICE") }
-    var storePhone by remember { mutableStateOf("0812-3456-7890") }
-    var storeAddress by remember { mutableStateOf("Jl. Merdeka No. 45, Jakarta") }
-    var storeTagline by remember { mutableStateOf("Spesialis Repair Smartphone & Laptop") }
-    var storeReceiptNote by remember { mutableStateOf("Garansi berlaku 30 hari. Wajib menyertakan nota ini saat klaim.") }
+    // Store settings state loaded from SharedPreferences
+    var storeName by remember { mutableStateOf(prefs.getString("store_name", "GANK SERVICE") ?: "GANK SERVICE") }
+    var storePhone by remember { mutableStateOf(prefs.getString("store_phone", "0812-3456-7890") ?: "0812-3456-7890") }
+    var storeAddress by remember { mutableStateOf(prefs.getString("store_address", "Jl. Merdeka No. 45, Jakarta") ?: "Jl. Merdeka No. 45, Jakarta") }
+    var storeTagline by remember { mutableStateOf(prefs.getString("store_tagline", "Spesialis Repair Smartphone & Laptop") ?: "Spesialis Repair Smartphone & Laptop") }
+    var storeReceiptNote by remember { mutableStateOf(prefs.getString("store_note", "Garansi berlaku 30 hari. Wajib menyertakan nota ini saat klaim.") ?: "Garansi berlaku 30 hari. Wajib menyertakan nota ini saat klaim.") }
 
     Column(
         modifier = Modifier
@@ -195,15 +197,103 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.height(16.dp))
 
                             NeoBrutalistButton(
-                                text = "Simpan Pengaturan Toko",
+                                text = "Simpan Profil Toko",
                                 onClick = {
-                                    Toast.makeText(context, "Pengaturan toko berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                                    prefs.edit().apply {
+                                        putString("store_name", storeName)
+                                        putString("store_phone", storePhone)
+                                        putString("store_address", storeAddress)
+                                        putString("store_tagline", storeTagline)
+                                        putString("store_note", storeReceiptNote)
+                                        apply()
+                                    }
+                                    Toast.makeText(context, "Profil $storeName berhasil disimpan!", Toast.LENGTH_SHORT).show()
                                 },
                                 containerColor = GankColors.GankYellow,
                                 icon = Icons.Default.Save,
                                 modifier = Modifier.fillMaxWidth(),
                                 testTag = "btn_save_store_settings"
                             )
+                        }
+                    }
+                }
+
+                // Live Kop Nota Preview Card
+                item {
+                    NeoBrutalistCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        backgroundColor = GankColors.Paper
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "PREVIEW KOP NOTA SERVIS",
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 12.sp,
+                                    color = GankColors.Ink
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(GankColors.Ink)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text("LIVE", fontSize = 9.sp, fontWeight = FontWeight.Black, color = GankColors.GankYellow)
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .border(2.dp, GankColors.Ink, RoundedCornerShape(6.dp))
+                                    .background(GankColors.White)
+                                    .padding(12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = storeName.ifBlank { "NAMA TOKO" },
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 16.sp,
+                                    color = GankColors.Ink
+                                )
+                                Text(
+                                    text = storeTagline.ifBlank { "Slogan Toko" },
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = GankColors.Steel
+                                )
+                                Text(
+                                    text = storeAddress.ifBlank { "Alamat Toko" },
+                                    fontSize = 10.sp,
+                                    color = GankColors.Steel
+                                )
+                                Text(
+                                    text = "WA: ${storePhone.ifBlank { "-" }}",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = GankColors.Ink
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(1.dp)
+                                        .background(GankColors.Ink)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Catatan: ${storeReceiptNote.ifBlank { "-" }}",
+                                    fontSize = 9.sp,
+                                    color = GankColors.Steel,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
                 }

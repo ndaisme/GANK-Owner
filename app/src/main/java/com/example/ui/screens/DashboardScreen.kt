@@ -130,48 +130,48 @@ fun DashboardScreen(
             }
         }
 
-        // CI/CD Banner Status
+        // Pengingat Stok Sparepart Menipis
         item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(GankColors.White)
-                    .border(3.dp, GankColors.Ink, RoundedCornerShape(8.dp))
-                    .padding(12.dp)
+            val lowStockItems = spareparts.filter { it.stock <= it.minStock }
+            NeoBrutalistCard(
+                modifier = Modifier.fillMaxWidth(),
+                backgroundColor = GankColors.White
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "CI/CD Status",
-                        tint = GankColors.Success,
+                        imageVector = if (lowStockItems.isNotEmpty()) Icons.Default.Warning else Icons.Default.CheckCircle,
+                        contentDescription = "Pengingat Stok",
+                        tint = if (lowStockItems.isNotEmpty()) GankColors.Danger else GankColors.Success,
                         modifier = Modifier.size(28.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "GitHub Actions Build Compatible",
+                            text = if (lowStockItems.isNotEmpty()) "PENGINGAT: STOK SPAREPART MENIPIS" else "STOK SPAREPART AMAN",
                             fontWeight = FontWeight.Black,
                             fontSize = 13.sp,
                             color = GankColors.Ink
                         )
                         Text(
-                            text = "./gradlew assembleDebug & gradle-wrapper ready",
+                            text = if (lowStockItems.isNotEmpty()) {
+                                "${lowStockItems.size} barang perlu di-restok: ${lowStockItems.take(2).joinToString { it.name }}${if (lowStockItems.size > 2) "..." else ""}"
+                            } else {
+                                "Semua komponen & sparepart berada di atas stok minimal."
+                            },
                             fontSize = 11.sp,
-                            color = GankColors.Steel
+                            color = GankColors.Steel,
+                            maxLines = 2
                         )
                     }
-                    TextButton(onClick = { onNavigateTab(MainTab.SETTINGS) }) {
-                        Text(
-                            text = "Lihat Detail",
-                            fontWeight = FontWeight.Black,
-                            color = GankColors.Ink,
-                            fontSize = 12.sp
-                        )
-                    }
+                    NeoBrutalistButton(
+                        text = if (lowStockItems.isNotEmpty()) "Restok" else "Stok",
+                        onClick = { onNavigateTab(MainTab.SPAREPARTS) },
+                        containerColor = if (lowStockItems.isNotEmpty()) GankColors.GankYellow else GankColors.White,
+                        testTag = "btn_restock_dashboard"
+                    )
                 }
             }
         }

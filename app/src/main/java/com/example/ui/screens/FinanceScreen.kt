@@ -1,6 +1,8 @@
 package com.example.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -60,7 +63,7 @@ fun FinanceScreen(
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             NeoBrutalistCard(
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(1.2f)
                     .height(100.dp),
                 backgroundColor = GankColors.GankYellow
             ) {
@@ -72,6 +75,8 @@ fun FinanceScreen(
                     fontWeight = FontWeight.Black,
                     color = GankColors.Ink
                 )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(text = "Total Kas & Margin Bersih", fontSize = 9.sp, color = GankColors.Ink, fontWeight = FontWeight.Bold)
             }
 
             NeoBrutalistCard(
@@ -81,10 +86,10 @@ fun FinanceScreen(
                 backgroundColor = GankColors.White
             ) {
                 Text(text = "Pemasukan", fontSize = 10.sp, color = GankColors.Success, fontWeight = FontWeight.Bold)
-                Text(text = currencyFormatter.format(totalIncome), fontSize = 13.sp, fontWeight = FontWeight.Black)
+                Text(text = currencyFormatter.format(totalIncome), fontSize = 12.sp, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = "Pengeluaran", fontSize = 10.sp, color = GankColors.Danger, fontWeight = FontWeight.Bold)
-                Text(text = currencyFormatter.format(totalExpense), fontSize = 13.sp, fontWeight = FontWeight.Black)
+                Text(text = currencyFormatter.format(totalExpense), fontSize = 12.sp, fontWeight = FontWeight.Black)
             }
         }
 
