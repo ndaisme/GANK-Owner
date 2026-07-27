@@ -97,6 +97,7 @@ class MainActivity : ComponentActivity() {
                             MainTab.DASHBOARD -> DashboardScreen(
                                 services = services,
                                 spareparts = spareparts,
+                                transactions = transactions,
                                 totalIncome = totalIncome,
                                 onNavigateTab = { viewModel.selectTab(it) },
                                 onAddServiceClick = {
@@ -142,7 +143,10 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
 
-                            MainTab.CICD -> CiCdScreen()
+                            MainTab.SETTINGS -> SettingsScreen(
+                                onClearDummyData = { viewModel.clearAllDummyData() },
+                                onResetSampleData = { viewModel.resetSampleData() }
+                            )
                         }
                     }
                 }
@@ -200,7 +204,7 @@ fun GankTopAppBar(
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
                     .background(GankColors.NeonBlue)
-                    .clickable { onTabSelected(MainTab.CICD) }
+                    .clickable { onTabSelected(MainTab.SETTINGS) }
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -283,11 +287,11 @@ fun GankBottomNavBar(
             )
 
             NavItem(
-                title = "CI/CD",
-                icon = Icons.Default.CheckCircle,
-                isSelected = selectedTab == MainTab.CICD,
-                onClick = { onTabSelected(MainTab.CICD) },
-                testTag = "tab_cicd"
+                title = "Setting",
+                icon = Icons.Default.Settings,
+                isSelected = selectedTab == MainTab.SETTINGS,
+                onClick = { onTabSelected(MainTab.SETTINGS) },
+                testTag = "tab_settings"
             )
         }
     }

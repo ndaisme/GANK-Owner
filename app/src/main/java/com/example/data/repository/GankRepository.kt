@@ -48,6 +48,18 @@ class GankRepository(
 
     suspend fun addCustomer(customer: CustomerEntity): Long = customerDao.insertCustomer(customer)
 
+    suspend fun clearAllData() {
+        serviceDao.clearAllServices()
+        sparepartDao.clearAllSpareparts()
+        financeDao.clearAllTransactions()
+        customerDao.clearAllCustomers()
+    }
+
+    suspend fun resetSampleData() {
+        clearAllData()
+        seedSampleDataIfEmpty()
+    }
+
     suspend fun seedSampleDataIfEmpty() {
         if (serviceDao.countServices() == 0) {
             val sampleServices = listOf(

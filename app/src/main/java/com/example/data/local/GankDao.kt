@@ -30,6 +30,9 @@ interface ServiceDao {
     @Query("DELETE FROM services WHERE id = :id")
     suspend fun deleteService(id: Int)
 
+    @Query("DELETE FROM services")
+    suspend fun clearAllServices()
+
     @Query("SELECT COUNT(*) FROM services")
     suspend fun countServices(): Int
 }
@@ -48,6 +51,9 @@ interface SparepartDao {
     @Query("UPDATE spareparts SET stock = stock + :change WHERE id = :id")
     suspend fun updateStock(id: Int, change: Int)
 
+    @Query("DELETE FROM spareparts")
+    suspend fun clearAllSpareparts()
+
     @Query("SELECT COUNT(*) FROM spareparts")
     suspend fun countSpareparts(): Int
 }
@@ -60,6 +66,9 @@ interface FinanceDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransaction(transaction: FinanceTransaction): Long
 
+    @Query("DELETE FROM finance")
+    suspend fun clearAllTransactions()
+
     @Query("SELECT COUNT(*) FROM finance")
     suspend fun countTransactions(): Int
 }
@@ -71,6 +80,9 @@ interface CustomerDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCustomer(customer: CustomerEntity): Long
+
+    @Query("DELETE FROM customers")
+    suspend fun clearAllCustomers()
 
     @Query("SELECT COUNT(*) FROM customers")
     suspend fun countCustomers(): Int

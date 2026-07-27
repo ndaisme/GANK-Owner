@@ -20,7 +20,7 @@ enum class MainTab(val title: String) {
     SPAREPARTS("Sparepart"),
     FINANCE("Kas"),
     CUSTOMERS("Pelanggan"),
-    CICD("CI/CD Status")
+    SETTINGS("Pengaturan")
 }
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -217,6 +217,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     address = address
                 )
             )
+        }
+    }
+
+    fun clearAllDummyData() {
+        viewModelScope.launch {
+            repository.clearAllData()
+        }
+    }
+
+    fun resetSampleData() {
+        viewModelScope.launch {
+            repository.resetSampleData()
         }
     }
 }
