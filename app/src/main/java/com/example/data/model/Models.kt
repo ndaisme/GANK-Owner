@@ -30,7 +30,8 @@ data class ServiceOrder(
     val technicianName: String = "Teknisi Utama",
     val warrantyDays: Int = 30,
     val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+    val capitalCost: Double = 0.0
 )
 
 @Entity(tableName = "spareparts")

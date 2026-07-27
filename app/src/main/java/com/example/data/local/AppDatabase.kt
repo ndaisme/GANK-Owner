@@ -16,7 +16,7 @@ import com.example.data.model.SparepartItem
         FinanceTransaction::class,
         CustomerEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -89,7 +89,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         imei: String,
         complaint: String,
         estimatedCost: Double,
-        downPayment: Double
+        downPayment: Double,
+        capitalCost: Double,
+        createdAt: Long
     ) {
         viewModelScope.launch {
             val count = services.value.size + 101
@@ -103,7 +105,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 complaint = complaint,
                 estimatedCost = estimatedCost,
                 downPayment = downPayment,
-                status = ServiceStatus.CHECK_IN.name
+                status = ServiceStatus.CHECK_IN.name,
+                capitalCost = capitalCost,
+                createdAt = createdAt,
+                updatedAt = createdAt
             )
             repository.addService(order)
 

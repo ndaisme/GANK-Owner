@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -38,13 +40,15 @@ fun ServiceListScreen(
     selectedFilter: ServiceStatus?,
     onSelectFilter: (ServiceStatus?) -> Unit,
     onAdvanceStatus: (ServiceOrder) -> Unit,
-    onAddService: (customerName: String, customerPhone: String, deviceModel: String, imei: String, complaint: String, cost: Double, dp: Double) -> Unit,
-    showAddDialogInitially: Boolean = false
+    onAddService: (customerName: String, customerPhone: String, deviceModel: String, imei: String, complaint: String, cost: Double, dp: Double, capitalCost: Double, createdAt: Long) -> Unit,
+    showAddDialogInitially: Boolean = false,
+    onDismissAddDialog: () -> Unit = {}
 ) {
     var showAddDialog by remember { mutableStateOf(showAddDialogInitially) }
     var selectedServiceDetail by remember { mutableStateOf<ServiceOrder?>(null) }
     val context = LocalContext.current
     val currencyFormatter = remember { NumberFormat.getCurrencyInstance(Locale("id", "ID")) }
+    val dateFormatter = remember { java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale("id", "ID")) }
 
     Column(
         modifier = Modifier
@@ -174,7 +178,6 @@ fun ServiceListScreen(
                     NeoBrutalistCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(180.dp)
                             .clickable { selectedServiceDetail = service },
                         backgroundColor = GankColors.White
                     ) {
@@ -183,12 +186,20 @@ fun ServiceListScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = service.serviceNumber,
-                                fontWeight = FontWeight.Black,
-                                fontSize = 15.sp,
-                                color = GankColors.Ink
-                            )
+                            Column {
+                                Text(
+                                    text = service.serviceNumber,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 15.sp,
+                                    color = GankColors.Ink
+                                )
+                                Text(
+                                    text = "Masuk: ${dateFormatter.format(java.util.Date(service.createdAt))}",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = GankColors.Steel
+                                )
+                            }
                             GSStatusChip(status = statusEnum)
                         }
 
@@ -266,7 +277,10 @@ fun ServiceListScreen(
     // Modal Add Service Dialog
     if (showAddDialog) {
         AlertDialog(
-            onDismissRequest = { showAddDialog = false },
+            onDismissRequest = { 
+                showAddDialog = false 
+                onDismissAddDialog()
+            },
             title = {
                 Text(
                     text = "TAMBAH NOTA SERVIS BARU",
@@ -282,8 +296,18 @@ fun ServiceListScreen(
                 var complaint by remember { mutableStateOf("") }
                 var costStr by remember { mutableStateOf("") }
                 var dpStr by remember { mutableStateOf("") }
+                var capitalCostStr by remember { mutableStateOf("") }
+                val todayString = remember {
+                    val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                    sdf.format(java.util.Date())
+                }
+                var dateStr by remember { mutableStateOf(todayString) }
 
-                Column(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
                     NeoBrutalistTextField(value = name, onValueChange = { name = it }, label = "Nama Pelanggan *")
                     NeoBrutalistTextField(value = phone, onValueChange = { phone = it }, label = "No. HP / WhatsApp *", keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone))
                     NeoBrutalistTextField(value = device, onValueChange = { device = it }, label = "Tipe / Merk HP *", placeholder = "cth. iPhone 13 / Samsung S23")
@@ -293,6 +317,10 @@ fun ServiceListScreen(
                         NeoBrutalistTextField(value = costStr, onValueChange = { costStr = it }, label = "Estimasi Biaya", modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                         NeoBrutalistTextField(value = dpStr, onValueChange = { dpStr = it }, label = "DP (Opsional)", modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                     }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        NeoBrutalistTextField(value = capitalCostStr, onValueChange = { capitalCostStr = it }, label = "Harga Modal", modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                        NeoBrutalistTextField(value = dateStr, onValueChange = { dateStr = it }, label = "Tanggal Masuk", modifier = Modifier.weight(1f), placeholder = "YYYY-MM-DD")
+                    }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -300,7 +328,10 @@ fun ServiceListScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        TextButton(onClick = { showAddDialog = false }) {
+                        TextButton(onClick = { 
+                            showAddDialog = false 
+                            onDismissAddDialog()
+                        }) {
                             Text("Batal", fontWeight = FontWeight.Bold, color = GankColors.Ink)
                         }
                         Spacer(modifier = Modifier.width(8.dp))
@@ -310,7 +341,14 @@ fun ServiceListScreen(
                                 if (name.isNotBlank() && phone.isNotBlank() && device.isNotBlank() && complaint.isNotBlank()) {
                                     val cost = costStr.toDoubleOrNull() ?: 0.0
                                     val dp = dpStr.toDoubleOrNull() ?: 0.0
-                                    onAddService(name, phone, device, imei, complaint, cost, dp)
+                                    val capitalCost = capitalCostStr.toDoubleOrNull() ?: 0.0
+                                    val parsedDateLong = try {
+                                        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                                        sdf.parse(dateStr)?.time ?: System.currentTimeMillis()
+                                    } catch (e: Exception) {
+                                        System.currentTimeMillis()
+                                    }
+                                    onAddService(name, phone, device, imei, complaint, cost, dp, capitalCost, parsedDateLong)
                                     showAddDialog = false
                                 }
                             },
@@ -349,6 +387,10 @@ fun ServiceListScreen(
                     Text(text = "Pelanggan: ${service.customerName} (${service.customerPhone})", fontWeight = FontWeight.Bold)
                     Text(text = "Unit HP: ${service.deviceModel}")
                     if (service.imei.isNotBlank()) Text(text = "IMEI: ${service.imei}", fontSize = 12.sp, color = GankColors.Steel)
+                    Text(text = "Tanggal Masuk: ${dateFormatter.format(java.util.Date(service.createdAt))}", fontSize = 12.sp, color = GankColors.Steel)
+                    if (service.capitalCost > 0) {
+                        Text(text = "Harga Modal: ${currencyFormatter.format(service.capitalCost)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = GankColors.Steel)
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Box(

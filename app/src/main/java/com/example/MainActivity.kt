@@ -113,10 +113,12 @@ class MainActivity : ComponentActivity() {
                                 selectedFilter = selectedFilter,
                                 onSelectFilter = { viewModel.setStatusFilter(it) },
                                 onAdvanceStatus = { viewModel.advanceServiceStatus(it) },
-                                onAddService = { name, phone, device, imei, complaint, cost, dp ->
-                                    viewModel.addService(name, phone, device, imei, complaint, cost, dp)
+                                onAddService = { name, phone, device, imei, complaint, cost, dp, capitalCost, createdAt ->
+                                    viewModel.addService(name, phone, device, imei, complaint, cost, dp, capitalCost, createdAt)
+                                    showQuickAddServiceDialog = false
                                 },
-                                showAddDialogInitially = showQuickAddServiceDialog
+                                showAddDialogInitially = showQuickAddServiceDialog,
+                                onDismissAddDialog = { showQuickAddServiceDialog = false }
                             )
 
                             MainTab.SPAREPARTS -> SparepartScreen(
