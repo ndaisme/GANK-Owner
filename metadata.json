@@ -1,0 +1,6 @@
+{
+  "name": "GANK Service Manager",
+  "description": "Aplikasi ERP & Operasional Servis HP dengan Neo-Brutalist UI, Room Database, dan GitHub Actions CI/CD compatibility.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

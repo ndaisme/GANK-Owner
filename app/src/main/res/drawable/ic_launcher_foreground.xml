@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Wrench and Smartphone repair symbol for GANK SERVICE -->
+    <path
+        android:fillColor="#FFD400"
+        android:pathData="M38,28h32c3.3,0 6,2.7 6,6v40c0,3.3 -2.7,6 -6,6H38c-3.3,0 -6,-2.7 -6,-6V34c0,-3.3 2.7,-6 6,-6z" />
+    <path
+        android:fillColor="#0A0A0A"
+        android:pathData="M36,34h36v32H36z" />
+    <path
+        android:fillColor="#00B8FF"
+        android:pathData="M48,72h12v4H48z" />
+    <path
+        android:fillColor="#FFD400"
+        android:pathData="M68,40l8,-8c1.5,-1.5 3.9,-1.5 5.4,0l0,0c1.5,1.5 1.5,3.9 0,5.4l-8,8z" />
+</vector>
