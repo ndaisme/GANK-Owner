@@ -44,8 +44,12 @@ fun SettingsScreen(
 
     // Store settings state loaded from SharedPreferences
     var storeName by remember { mutableStateOf(prefs.getString("store_name", "GANK SERVICE") ?: "GANK SERVICE") }
+    var storeOwner by remember { mutableStateOf(prefs.getString("store_owner", "Budi Santoso (Owner)") ?: "Budi Santoso (Owner)") }
     var storePhone by remember { mutableStateOf(prefs.getString("store_phone", "0812-3456-7890") ?: "0812-3456-7890") }
-    var storeAddress by remember { mutableStateOf(prefs.getString("store_address", "Jl. Merdeka No. 45, Jakarta") ?: "Jl. Merdeka No. 45, Jakarta") }
+    var storeEmail by remember { mutableStateOf(prefs.getString("store_email", "gankservice@gmail.com") ?: "gankservice@gmail.com") }
+    var storeAddress by remember { mutableStateOf(prefs.getString("store_address", "Jl. Merdeka No. 45, Ruko Blok B2") ?: "Jl. Merdeka No. 45, Ruko Blok B2") }
+    var storeCity by remember { mutableStateOf(prefs.getString("store_city", "Jakarta Pusat, 10110") ?: "Jakarta Pusat, 10110") }
+    var storeMapsLink by remember { mutableStateOf(prefs.getString("store_maps", "Seberang Bank BCA | Buka 09.00 - 21.00") ?: "Seberang Bank BCA | Buka 09.00 - 21.00") }
     var storeTagline by remember { mutableStateOf(prefs.getString("store_tagline", "Spesialis Repair Smartphone & Laptop") ?: "Spesialis Repair Smartphone & Laptop") }
     var storeReceiptNote by remember { mutableStateOf(prefs.getString("store_note", "Garansi berlaku 30 hari. Wajib menyertakan nota ini saat klaim.") ?: "Garansi berlaku 30 hari. Wajib menyertakan nota ini saat klaim.") }
 
@@ -109,7 +113,7 @@ fun SettingsScreen(
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = GankColors.Ink,
+                        tint = if (activeSubTab == 1) GankColors.Ink else GankColors.White,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -127,7 +131,7 @@ fun SettingsScreen(
 
         if (activeSubTab == 0) {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 item {
@@ -154,27 +158,77 @@ fun SettingsScreen(
                                 value = storeName,
                                 onValueChange = { storeName = it },
                                 label = "Nama Toko / Bengkel *",
+                                placeholder = "cth. GANK SERVICE",
                                 testTag = "input_store_name"
                             )
 
                             Spacer(modifier = Modifier.height(8.dp))
 
                             NeoBrutalistTextField(
-                                value = storePhone,
-                                onValueChange = { storePhone = it },
-                                label = "No. WhatsApp / Telepon Toko *",
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                                testTag = "input_store_phone"
+                                value = storeOwner,
+                                onValueChange = { storeOwner = it },
+                                label = "Nama Pemilik / Penanggung Jawab",
+                                placeholder = "cth. Budi Santoso",
+                                testTag = "input_store_owner"
                             )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    NeoBrutalistTextField(
+                                        value = storePhone,
+                                        onValueChange = { storePhone = it },
+                                        label = "No. WhatsApp Toko *",
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                        placeholder = "0812-3456-7890",
+                                        testTag = "input_store_phone"
+                                    )
+                                }
+                                Box(modifier = Modifier.weight(1f)) {
+                                    NeoBrutalistTextField(
+                                        value = storeEmail,
+                                        onValueChange = { storeEmail = it },
+                                        label = "Email Toko",
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                                        placeholder = "gankservice@gmail.com",
+                                        testTag = "input_store_email"
+                                    )
+                                }
+                            }
 
                             Spacer(modifier = Modifier.height(8.dp))
 
                             NeoBrutalistTextField(
                                 value = storeAddress,
                                 onValueChange = { storeAddress = it },
-                                label = "Alamat Lengkap Toko",
+                                label = "Alamat Jalan / Ruko / Gedung *",
+                                placeholder = "cth. Jl. Merdeka No. 45, Ruko Blok B2",
                                 testTag = "input_store_address"
                             )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    NeoBrutalistTextField(
+                                        value = storeCity,
+                                        onValueChange = { storeCity = it },
+                                        label = "Kota / Kode Pos",
+                                        placeholder = "cth. Jakarta Pusat, 10110",
+                                        testTag = "input_store_city"
+                                    )
+                                }
+                                Box(modifier = Modifier.weight(1f)) {
+                                    NeoBrutalistTextField(
+                                        value = storeMapsLink,
+                                        onValueChange = { storeMapsLink = it },
+                                        label = "Patokan / Jam Operasional",
+                                        placeholder = "cth. Buka 09.00 - 21.00",
+                                        testTag = "input_store_maps"
+                                    )
+                                }
+                            }
 
                             Spacer(modifier = Modifier.height(8.dp))
 
@@ -182,6 +236,7 @@ fun SettingsScreen(
                                 value = storeTagline,
                                 onValueChange = { storeTagline = it },
                                 label = "Slogan / Tagline Toko",
+                                placeholder = "cth. Spesialis Repair Smartphone & Laptop",
                                 testTag = "input_store_tagline"
                             )
 
@@ -191,23 +246,28 @@ fun SettingsScreen(
                                 value = storeReceiptNote,
                                 onValueChange = { storeReceiptNote = it },
                                 label = "Catatan Syarat & Garansi di Nota",
+                                placeholder = "cth. Garansi berlaku 30 hari...",
                                 testTag = "input_store_note"
                             )
 
                             Spacer(modifier = Modifier.height(16.dp))
 
                             NeoBrutalistButton(
-                                text = "Simpan Profil Toko",
+                                text = "Simpan Profil & Alamat Toko",
                                 onClick = {
                                     prefs.edit().apply {
                                         putString("store_name", storeName)
+                                        putString("store_owner", storeOwner)
                                         putString("store_phone", storePhone)
+                                        putString("store_email", storeEmail)
                                         putString("store_address", storeAddress)
+                                        putString("store_city", storeCity)
+                                        putString("store_maps", storeMapsLink)
                                         putString("store_tagline", storeTagline)
                                         putString("store_note", storeReceiptNote)
                                         apply()
                                     }
-                                    Toast.makeText(context, "Profil $storeName berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Profil & Alamat $storeName berhasil disimpan!", Toast.LENGTH_SHORT).show()
                                 },
                                 containerColor = GankColors.GankYellow,
                                 icon = Icons.Default.Save,
@@ -242,7 +302,7 @@ fun SettingsScreen(
                                         .background(GankColors.Ink)
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
-                                    Text("LIVE", fontSize = 9.sp, fontWeight = FontWeight.Black, color = GankColors.GankYellow)
+                                    Text("LIVE PREVIEW", fontSize = 9.sp, fontWeight = FontWeight.Black, color = GankColors.GankYellow)
                                 }
                             }
 
@@ -263,22 +323,40 @@ fun SettingsScreen(
                                     color = GankColors.Ink
                                 )
                                 Text(
-                                    text = storeTagline.ifBlank { "Slogan Toko" },
+                                    text = storeTagline.ifBlank { "Slogan / Tagline Toko" },
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = GankColors.Steel
                                 )
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = storeAddress.ifBlank { "Alamat Toko" },
+                                    text = "${storeAddress.ifBlank { "Alamat Jalan" }}${if (storeCity.isNotBlank()) ", $storeCity" else ""}",
                                     fontSize = 10.sp,
-                                    color = GankColors.Steel
+                                    color = GankColors.Steel,
+                                    fontWeight = FontWeight.Medium
                                 )
+                                if (storeMapsLink.isNotBlank()) {
+                                    Text(
+                                        text = "📍 $storeMapsLink",
+                                        fontSize = 9.sp,
+                                        color = GankColors.Steel
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "WA: ${storePhone.ifBlank { "-" }}",
+                                    text = "WA: ${storePhone.ifBlank { "-" }}${if (storeEmail.isNotBlank()) " | Email: $storeEmail" else ""}",
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = GankColors.Ink
                                 )
+                                if (storeOwner.isNotBlank()) {
+                                    Text(
+                                        text = "Penanggung Jawab: $storeOwner",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = GankColors.Steel
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Box(
                                     modifier = Modifier
@@ -288,7 +366,7 @@ fun SettingsScreen(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Catatan: ${storeReceiptNote.ifBlank { "-" }}",
+                                    text = "Catatan Syarat Garansi: ${storeReceiptNote.ifBlank { "-" }}",
                                     fontSize = 9.sp,
                                     color = GankColors.Steel,
                                     fontWeight = FontWeight.SemiBold
@@ -421,7 +499,7 @@ fun SettingsScreen(
             }
         } else {
             // Embed CI/CD Screen directly inside Settings
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.weight(1f)) {
                 CiCdScreen()
             }
         }

@@ -34,7 +34,7 @@ fun NeoBrutalistCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Box(modifier = modifier) {
-        // Solid Pitch Black Hard Offset Shadow
+        // Solid Pitch Black Hard Offset Shadow (matches content height)
         Box(
             modifier = Modifier
                 .matchParentSize()
@@ -42,18 +42,16 @@ fun NeoBrutalistCard(
                 .clip(RoundedCornerShape(cornerRadius))
                 .background(GankColors.Ink)
         )
-        // Main Foreground Box with Thick Border
-        Box(
+        // Main Foreground Content Container (defines size)
+        Column(
             modifier = Modifier
-                .matchParentSize()
+                .fillMaxWidth()
                 .clip(RoundedCornerShape(cornerRadius))
                 .background(backgroundColor)
                 .border(borderWidth, borderColor, RoundedCornerShape(cornerRadius))
                 .padding(16.dp)
         ) {
-            Column {
-                content()
-            }
+            content()
         }
     }
 }
@@ -166,7 +164,7 @@ fun GSStatusChip(
     val (bgColor, textColor) = when (status) {
         ServiceStatus.CHECK_IN -> GankColors.Silver to GankColors.Ink
         ServiceStatus.DIAGNOSIS -> GankColors.NeonBlue to GankColors.Ink
-        ServiceStatus.WAITING_APPROVAL -> GankColors.Warning to GankColors.Ink
+        ServiceStatus.WAITING_APPROVAL -> GankColors.Warning to GankColors.White
         ServiceStatus.REPAIR -> GankColors.GankYellow to GankColors.Ink
         ServiceStatus.QUALITY_CONTROL -> GankColors.PurpleQC to GankColors.White
         ServiceStatus.COMPLETED -> GankColors.Success to GankColors.White
