@@ -1,6 +1,7 @@
 package com.example.ui
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppDatabase
@@ -49,8 +50,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             db.customerDao()
         )
 
+        val prefs = application.getSharedPreferences("gank_store_prefs", Context.MODE_PRIVATE)
+        val clearedDummy = prefs.getBoolean("cleared_dummy_v1", false)
+
         viewModelScope.launch {
-            repository.seedSampleDataIfEmpty()
+            if (!clearedDummy) {
+                // Clear existing dummy data immediately on update
+                repository.clearAllData()
+                prefs.edit()
+                    .putBoolean("cleared_dummy_v1", true)
+                    .putBoolean("has_seeded_initial_data", true)
+                    .apply()
+            }
         }
     }
 
@@ -259,12 +270,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun clearAllDummyData() {
         viewModelScope.launch {
             repository.clearAllData()
+            val prefs = getApplication<Application>().getSharedPreferences("gank_store_prefs", Context.MODE_PRIVATE)
+            prefs.edit().putBoolean("cleared_dummy_v1", true).apply()
         }
     }
 
     fun resetSampleData() {
         viewModelScope.launch {
             repository.resetSampleData()
+            val prefs = getApplication<Application>().getSharedPreferences("gank_store_prefs", Context.MODE_PRIVATE)
+            prefs.edit().putBoolean("cleared_dummy_v1", true).apply()
         }
     }
 
