@@ -8,18 +8,32 @@ class DriftServiceRepository implements ServiceRepository {
 
   final AppDatabase _db;
 
-  Future<List<ServiceOrder>> listServices({bool includeDeleted = false}) {
+  Future<List<ServiceOrder>> listServices({bool includeDeleted = false, String search = '', String? status, bool newestFirst = true}) {
     final query = _db.select(_db.serviceOrders)
-      ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
+      ..orderBy([(t) => newestFirst ? OrderingTerm.desc(t.createdAt) : OrderingTerm.asc(t.createdAt)]);
+    if (search.trim().isNotEmpty) {
+      final keyword = '%${search.trim()}%';
+      query.where((t) => t.serviceNumber.like(keyword) | t.customerName.like(keyword) | t.customerPhone.like(keyword) | t.deviceModel.like(keyword) | t.complaint.like(keyword));
+    }
+    if (status != null && status.isNotEmpty) {
+      query.where((t) => t.status.equals(status));
+    }
     if (!includeDeleted) {
       query.where((t) => t.isDeleted.equals(false));
     }
     return query.get();
   }
 
-  Stream<List<ServiceOrder>> watchServices({bool includeDeleted = false}) {
+  Stream<List<ServiceOrder>> watchServices({bool includeDeleted = false, String search = '', String? status, bool newestFirst = true}) {
     final query = _db.select(_db.serviceOrders)
-      ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
+      ..orderBy([(t) => newestFirst ? OrderingTerm.desc(t.createdAt) : OrderingTerm.asc(t.createdAt)]);
+    if (search.trim().isNotEmpty) {
+      final keyword = '%${search.trim()}%';
+      query.where((t) => t.serviceNumber.like(keyword) | t.customerName.like(keyword) | t.customerPhone.like(keyword) | t.deviceModel.like(keyword) | t.complaint.like(keyword));
+    }
+    if (status != null && status.isNotEmpty) {
+      query.where((t) => t.status.equals(status));
+    }
     if (!includeDeleted) {
       query.where((t) => t.isDeleted.equals(false));
     }
@@ -31,7 +45,7 @@ class DriftServiceRepository implements ServiceRepository {
   Future<int> softDeleteService(int id) => (_db.update(_db.serviceOrders)..where((t) => t.id.equals(id))).write(ServiceOrdersCompanion(isDeleted: const Value(true), deletedAt: Value(DateTime.now()), updatedAt: Value(DateTime.now())));
 
   Future<List<ServiceStatusTimelineData>> listTimeline(int serviceId, {bool includeDeleted = false}) {
-    final query = _db.select(_db.serviceStatusTimeline)
+    final query = _db.select(_db.serviceStatusTimelines)
       ..where((t) => t.serviceId.equals(serviceId))
       ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]);
     if (!includeDeleted) {
@@ -40,7 +54,7 @@ class DriftServiceRepository implements ServiceRepository {
     return query.get();
   }
 
-  Future<int> addTimeline(ServiceStatusTimelineCompanion entry) => _db.into(_db.serviceStatusTimeline).insert(entry);
+  Future<int> addTimeline(ServiceStatusTimelinesCompanion entry) => _db.into(_db.serviceStatusTimelines).insert(entry);
 
   Future<ServiceInitialCheck?> getInitialCheck(int serviceId) => (_db.select(_db.serviceInitialChecks)
         ..where((t) => t.serviceId.equals(serviceId) & t.isDeleted.equals(false)))
