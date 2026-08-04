@@ -63,7 +63,7 @@ class Payments extends Table with SoftDeleteColumns {
   DateTimeColumn get updatedAt => dateTime().clientDefault(DateTime.now)();
 }
 
-class ServiceStatusTimeline extends Table with SoftDeleteColumns {
+class ServiceStatusTimelines extends Table with SoftDeleteColumns {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get serviceId => integer().references(ServiceOrders, #id)();
   TextColumn get status => text()();
@@ -120,12 +120,12 @@ class AppUsers extends Table with SoftDeleteColumns {
   DateTimeColumn get updatedAt => dateTime().clientDefault(DateTime.now)();
 }
 
-@DriftDatabase(tables: [ServiceOrders, Customers, InventoryItems, Payments, ServiceStatusTimeline, ServiceInitialChecks, ServiceFinalChecks, StoreSettings, AppUsers])
+@DriftDatabase(tables: [ServiceOrders, Customers, InventoryItems, Payments, ServiceStatusTimelines, ServiceInitialChecks, ServiceFinalChecks, StoreSettings, AppUsers])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? openGankDatabase());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -133,6 +133,9 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             await m.addColumn(storeSettings, storeSettings.ownerPinHash);
             await m.addColumn(storeSettings, storeSettings.technicianPinHash);
+          }
+          if (from < 3) {
+            await m.createTable(serviceStatusTimelines);
           }
         },
       );
