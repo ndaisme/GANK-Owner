@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/widgets/neo_brutalist.dart';
-import '../../auth/domain/auth_session.dart';
+import '../../auth/domain/entities/auth_session.dart';
 import '../../auth/presentation/auth_controller.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {

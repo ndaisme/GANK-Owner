@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/gank_theme.dart';
 import '../../../core/widgets/neo_brutalist.dart';
-import '../domain/auth_session.dart';
+import '../domain/entities/auth_session.dart';
 import 'auth_controller.dart';
 
 class AuthPage extends ConsumerStatefulWidget {
