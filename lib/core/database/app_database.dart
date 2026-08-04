@@ -104,6 +104,8 @@ class StoreSettings extends Table with SoftDeleteColumns {
   TextColumn get phone => text().withDefault(const Constant(''))();
   TextColumn get address => text().withDefault(const Constant(''))();
   TextColumn get receiptFooter => text().withDefault(const Constant('Terima kasih'))();
+  TextColumn get ownerPinHash => text().withDefault(const Constant('Z2FuazoxMjM0NTY='))();
+  TextColumn get technicianPinHash => text().withDefault(const Constant('Z2FuazowMDAw'))();
   IntColumn get defaultWarrantyDays => integer().withDefault(const Constant(30))();
   DateTimeColumn get updatedAt => dateTime().clientDefault(DateTime.now)();
 }
@@ -123,7 +125,17 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? openGankDatabase());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.addColumn(storeSettings, storeSettings.ownerPinHash);
+            await m.addColumn(storeSettings, storeSettings.technicianPinHash);
+          }
+        },
+      );
 }
 
 QueryExecutor openGankDatabase() => driftDatabase(name: 'gank_owner');
