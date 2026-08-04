@@ -1,0 +1,19 @@
+version:
+  revision: "manual-bootstrap"
+  channel: "stable"
+project_type: app
+
+migration:
+  platforms:
+    - platform: root
+      create_revision: manual-bootstrap
+      base_revision: manual-bootstrap
+    - platform: android
+      create_revision: manual-bootstrap
+      base_revision: manual-bootstrap
+    - platform: linux
+      create_revision: manual-bootstrap
+      base_revision: manual-bootstrap
+    - platform: windows
+      create_revision: manual-bootstrap
+      base_revision: manual-bootstrap

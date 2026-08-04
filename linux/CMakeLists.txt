@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.10)
+project(gank_owner LANGUAGES CXX)
+set(BINARY_NAME "gank_owner")
+set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
+add_subdirectory(flutter)
+add_subdirectory(runner)

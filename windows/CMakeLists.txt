@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.14)
+project(gank_owner LANGUAGES CXX)
+set(BINARY_NAME "gank_owner")
+add_subdirectory(flutter)
+add_subdirectory(runner)
