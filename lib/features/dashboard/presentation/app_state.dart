@@ -1,11 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../customers/domain/customer.dart';
-import '../../dashboard/domain/dashboard_summary.dart';
-import '../../dashboard/domain/get_dashboard_summary.dart';
-import '../../inventory/domain/sparepart_item.dart';
-import '../../payments/domain/finance_transaction.dart';
-import '../../services/domain/service_order.dart';
+import '../../customers/domain/entities/customer.dart';
+import '../../dashboard/domain/entities/dashboard_summary.dart';
+import '../../dashboard/domain/usecases/get_dashboard_summary.dart';
+import '../../inventory/domain/entities/sparepart_item.dart';
+import '../../payments/domain/entities/finance_transaction.dart';
+import '../../services/domain/entities/service_order.dart';
+import '../../services/domain/usecases/advance_service_status.dart';
+import '../../services/domain/usecases/generate_service_number.dart';
+import '../../services/domain/usecases/validate_pickup.dart';
+import '../../reports/domain/entities/report_summary.dart';
+import '../../reports/domain/usecases/generate_report_summary.dart';
 
 class GankState {
   const GankState({required this.services, required this.spareparts, required this.transactions, required this.customers});
@@ -19,14 +24,19 @@ class GankController extends StateNotifier<GankState> {
   GankController() : super(GankState(services: _seedServices, spareparts: _seedSpareparts, transactions: _seedTransactions, customers: _seedCustomers));
 
   void advanceService(ServiceOrder service) {
-    final next = _nextStatus(service.status);
+    final validationMessage = const ValidatePickup()(service);
+    if (service.status == ServiceStatus.completed && validationMessage != null) return;
+
+    final result = const AdvanceServiceStatus()(service, nextTransactionId: state.transactions.length + 1, timestamp: DateTime.now());
     state = GankState(
-      services: [for (final item in state.services) if (item.id == service.id) item.copyWith(status: next) else item],
+      services: [for (final item in state.services) if (item.id == service.id) result.service else item],
       spareparts: state.spareparts,
-      transactions: next == ServiceStatus.pickedUp ? [...state.transactions, FinanceTransaction(id: state.transactions.length + 1, type: TransactionType.income, category: 'Pelunasan Servis', amount: service.estimatedCost - service.downPayment, description: 'Pelunasan ${service.number}', timestamp: DateTime.now())] : state.transactions,
+      transactions: result.settlement == null ? state.transactions : [...state.transactions, result.settlement!],
       customers: state.customers,
     );
   }
+
+  String previewNextServiceNumber() => const GenerateServiceNumber()(date: DateTime.now(), sequence: state.services.length + 101);
 
   void updateStock(int id, int change) {
     state = GankState(
@@ -37,21 +47,17 @@ class GankController extends StateNotifier<GankState> {
     );
   }
 
-  ServiceStatus _nextStatus(ServiceStatus status) => switch (status) {
-        ServiceStatus.checkIn => ServiceStatus.diagnosis,
-        ServiceStatus.diagnosis => ServiceStatus.waitingApproval,
-        ServiceStatus.waitingApproval => ServiceStatus.repair,
-        ServiceStatus.repair => ServiceStatus.qualityControl,
-        ServiceStatus.qualityControl => ServiceStatus.completed,
-        ServiceStatus.completed => ServiceStatus.pickedUp,
-        ServiceStatus.pickedUp || ServiceStatus.cancelled => status,
-      };
 }
 
 final gankControllerProvider = StateNotifierProvider<GankController, GankState>((ref) => GankController());
 final dashboardSummaryProvider = Provider<DashboardSummary>((ref) {
   final state = ref.watch(gankControllerProvider);
   return const GetDashboardSummary()(services: state.services, spareparts: state.spareparts, transactions: state.transactions);
+});
+
+final reportSummaryProvider = Provider<ReportSummary>((ref) {
+  final transactions = ref.watch(gankControllerProvider).transactions;
+  return const GenerateReportSummary()(transactions);
 });
 
 final _seedServices = [

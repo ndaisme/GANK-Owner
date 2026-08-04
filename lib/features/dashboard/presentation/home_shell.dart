@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/gank_theme.dart';
 import '../../../core/widgets/neo_brutalist.dart';
-import '../../auth/domain/auth_permissions.dart';
+import '../../auth/domain/usecases/auth_permissions.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../customers/presentation/customers_page.dart';
 import '../../inventory/presentation/inventory_page.dart';
